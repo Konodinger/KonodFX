@@ -40,12 +40,12 @@ uniform float attenuationLOD <
 
 uniform bool applyPreThreshold <
     ui_label = "Pre-downsampling thresholding";
-    ui_label = "Apply thresholding before the downsampling of the screen.";
+    ui_tooltip = "Apply thresholding before the downsampling of the screen.";
 > = false;
 
 uniform bool onlyBloom <
     ui_label = "Only bloom";
-    ui_label = "Will only display the bloom on the screen.";
+    ui_tooltip = "Will only display the bloom on the screen.";
 > = false;
 
 

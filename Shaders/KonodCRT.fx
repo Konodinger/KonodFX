@@ -3,6 +3,11 @@
 #define PI 3.1415926536
 #define SQRT3 1.73205081f
 
+uniform bool activateCurvature <
+    ui_label = "Screen curvature";
+    ui_tooltip = "Activate screen curvature.";
+    > = true;
+
 uniform float2 curvatureInt <
     ui_type = "slider";
     ui_label = "Curvature intensity";
@@ -46,6 +51,11 @@ uniform float mixingRatio <
     ui_max = 0.2;
     ui_step = 0.001;
     > = 0.04;
+
+uniform bool activateGrid <
+    ui_label = "Aperture grid";
+    ui_tooltip = "Display the aperture grid.";
+    > = true;
 
 uniform float2 gridResolutionCoef <
     ui_type = "slider";
@@ -125,24 +135,32 @@ float3 RGBHexagonGrid(float2 uv) {
 
 
 float3 CRTScreenPass(float4 vpos : SV_POSITION, float2 texCoord : TEXCOORD) : SV_TARGET {
-    static const float halfScreenBorderSmoothness = screenBorderSmoothness*0.5;
+    float3 screenColor = tex2D(ReShade::BackBuffer, texCoord).rgb;
+    bool gammaCorrection = ((gamma != 0.0) && (activateGrid || activateMix));
 
-    float2 texCoordCentered = texCoord * 2.0 - 1.0;
-    texCoordCentered *= 1.0 + curvatureInt*pow(abs(texCoordCentered.yx), curvatureExponent);
-    texCoord = (texCoordCentered + 1.0) * 0.5;
-    
-    float2 insideScreen = smoothstep(halfScreenBorderSmoothness, -halfScreenBorderSmoothness, abs(texCoordCentered)-float2(1.0, 1.0));
-    float3 screenColor = tex2D(ReShade::BackBuffer, texCoord).rgb * insideScreen.x * insideScreen.y;
-    if (gamma != 0.0) screenColor = pow(screenColor, gamma);
-    
-    float3 screenColorGrid = RGBHexagonGrid(texCoord);
-    screenColor *= screenColorGrid * radianceCorrection;
+    if (activateCurvature) {
+        static const float halfScreenBorderSmoothness = screenBorderSmoothness*0.5;
 
+        float2 texCoordCentered = texCoord * 2.0 - 1.0;
+        texCoordCentered *= 1.0 + curvatureInt*pow(abs(texCoordCentered.yx), curvatureExponent);
+        texCoord = (texCoordCentered + 1.0) * 0.5;
+        float2 insideScreen = smoothstep(halfScreenBorderSmoothness, -halfScreenBorderSmoothness, abs(texCoordCentered)-float2(1.0, 1.0));
+        screenColor *= insideScreen.x * insideScreen.y;
+    }
+    if (gammaCorrection) screenColor = pow(screenColor, gamma);
     
-    float3 mixedColor = (1 - mixingRatio) * screenColor + mixingRatio * sideColor;
-    float3 outputColor = activateMix ? mixedColor : screenColor;
-    if (gamma != 0.0) outputColor = pow(outputColor, 1.0/gamma);
-    return outputColor;
+
+    if (activateGrid) {
+        float3 screenColorGrid = RGBHexagonGrid(texCoord);
+        screenColor *= screenColorGrid * radianceCorrection;
+    }
+
+    if (activateMix) {
+        float3 mixedColor = (1 - mixingRatio) * screenColor + mixingRatio * sideColor;
+        screenColor = activateMix ? mixedColor : screenColor;
+    }
+    if (gammaCorrection) screenColor = pow(screenColor, 1.0/gamma);
+    return screenColor;
 }
 
 technique HexagonalCRT {
