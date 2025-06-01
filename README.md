@@ -23,12 +23,18 @@ If you want to uninstall ReShade on your game, run the installer, select your ga
 
 A bloom shader using GPU downscaling for better performances.
 
+Bloom on:
 ![Bloom On](./Exemples/Bloom/BloomOnDarkSoulsIII.png)
+
+Bloom off:
 ![Bloom Off](./Exemples/Bloom/BloomOffDarkSoulsIII.png)
 
 #### Hexagonal CRT:
 
 A CRT shader combining a curvature of the screen, a hexagonal aperture grid display and color mixing. All of these options can be disabled individually. 
 
-![CRT On](./Exemples/CRT/CRTOnBonfirePeaks.png)
-![CRT Off](./Exemples/CRT/CRTOffBonfirePeaks.png)
+CRT on:
+![CRT On](./Exemples/CRT/CRTOnTunic.png)
+
+CRT off:
+![CRT Off](./Exemples/CRT/CRTOffTunic.png)
